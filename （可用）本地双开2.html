@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>课堂互动（最终稳定版）</title>
+<style>
+  body{font-size:26px; padding:40px; font-family:微软雅黑;}
+  .question{font-size:30px; margin:20px 0; line-height:1.6;}
+  .blank{color:red; border-bottom:2px solid red; padding:0 10px; min-width:150px; display:inline-block;}
+  .answer-box{margin:8px 0; padding:10px; background:#f1f1f1; border-radius:6px;}
+
+  .teacher-area{display:none; margin-bottom:20px; padding:20px; background:#fff5e6; border-radius:8px;}
+  input{font-size:24px; padding:8px; width:80%;}
+  button{font-size:24px; padding:8px 20px; margin:5px; border:none; border-radius:6px; cursor:pointer;}
+  .btn-teacher{background:#ff9800; color:white;}
+  .btn-clear{background:#f44336; color:white;}
+  .btn-submit{background:#2196f3; color:white;}
+</style>
+</head>
+<body>
+
+<!-- 老师改题目区域 -->
+<div class="teacher-area" id="teacherArea">
+  <h4>老师修改题目</h4>
+  <input id="teacherInput" placeholder="输入新题目">
+  <button onclick="saveQuestion()">确认修改</button>
+</div>
+
+<!-- 题目 + 填空（固定结构，不会被冲掉） -->
+<div class="question">
+  <span id="titleText">题目：</span>
+  <span id="blank" class="blank">__________</span>
+</div>
+
+<!-- 学生答题 -->
+<div style="margin:30px 0;">
+  <input id="studentInput" placeholder="学生输入答案">
+  <button class="btn-submit" onclick="submitAns()">提交</button>
+</div>
+
+<!-- 老师功能按钮 -->
+<button class="btn-teacher" onclick="showTeacherArea()">老师：改题目</button>
+<button class="btn-clear" onclick="clearAll()">清空答案</button>
+
+<!-- 答案展示墙 -->
+<h4 style="margin-top:40px;">学生答案实时展示：</h4>
+<div id="answerBoard"></div>
+
+<script>
+// 显示改题区
+function showTeacherArea() {
+  document.getElementById("teacherArea").style.display = "block";
+}
+
+// 保存题目（只改文字，不动填空！）
+function saveQuestion() {
+  let t = document.getElementById("teacherInput").value.trim();
+  if (!t) return;
+  localStorage.setItem("title", t);
+  document.getElementById("teacherInput").value = "";
+}
+
+// 学生提交答案
+function submitAns() {
+  let val = document.getElementById("studentInput").value.trim();
+  if (!val) return;
+  localStorage.setItem("ans", Date.now() + "_" + val);
+  document.getElementById("studentInput").value = "";
+}
+
+// 清空答案
+function clearAll() {
+  document.getElementById("blank").innerText = "";
+  document.getElementById("answerBoard").innerHTML = "";
+}
+
+// 实时同步（安全版，不会破坏结构）
+let lastAns = "";
+let lastTitle = "";
+
+setInterval(() => {
+  // 同步题目（只改文字，不碰填空！）
+  let title = localStorage.getItem("title") || "题目：";
+  if (title !== lastTitle) {
+    lastTitle = title;
+    document.getElementById("titleText").innerText = title;
+  }
+
+  // 同步答案
+  let ansData = localStorage.getItem("ans") || "";
+  if (ansData !== lastAns) {
+    lastAns = ansData;
+    let ansText = ansData.split("_")[1] || "";
+
+    // 填到红色填空里
+    document.getElementById("blank").innerText = ansText;
+
+    // 加到答案墙
+    let div = document.createElement("div");
+    div.className = "answer-box";
+    div.innerText = ansText;
+    document.getElementById("answerBoard").prepend(div);
+  }
+}, 300);
+</script>
+</body>
+</html>
