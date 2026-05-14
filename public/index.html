@@ -3,835 +3,779 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>课堂互动 · 在线论坛</title>
+<title>课堂互动系统</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "PingFang SC", "微软雅黑", sans-serif;
-    font-size: 16px;
-    background: #f5f7fa;
-    min-height: 100vh;
-    color: #333;
+  :root {
+    --primary: #4A90D9;
+    --primary-dark: #357ABD;
+    --accent: #FF9800;
+    --accent-dark: #E68900;
+    --success: #4CAF50;
+    --danger: #F44336;
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --text: #333333;
+    --text-light: #666666;
+    --border: #e0e0e0;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 10px;
   }
 
-  .top-bar {
-    background: #fff;
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* ========== 认证页面 ========== */
+  .auth-card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 40px 30px;
+    margin-top: 60px;
+    text-align: center;
+  }
+
+  .auth-card h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+
+  .auth-card .subtitle {
+    color: var(--text-light);
+    margin-bottom: 30px;
+    font-size: 14px;
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: #f5f5f5;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-family: inherit;
+    color: var(--text-light);
+  }
+
+  .auth-tab.active {
+    background: white;
+    color: var(--primary);
+    font-weight: bold;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+    text-align: left;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+
+  .form-group input:focus {
+    border-color: var(--primary);
+  }
+
+  .role-selector {
+    display: flex;
+    gap: 12px;
+  }
+
+  .role-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.2s;
+    font-family: inherit;
+    text-align: center;
+  }
+
+  .role-btn:hover {
+    border-color: var(--primary);
+  }
+
+  .role-btn.selected {
+    border-color: var(--primary);
+    background: #e8f0fe;
+    color: var(--primary);
+    font-weight: bold;
+  }
+
+  .btn {
     padding: 12px 24px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: inherit;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-dark);
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-accent:hover {
+    background: var(--accent-dark);
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    opacity: 0.9;
+  }
+
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 14px;
+    width: auto;
+  }
+
+  .error-msg {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  /* ========== 主页面 ========== */
+  .header {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header .user-info {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 10px;
   }
-  .top-bar .title { font-size: 20px; font-weight: 700; color: #1a1a2e; }
-  .top-bar .info {
-    display: flex; align-items: center; gap: 16px; font-size: 14px; flex-wrap: wrap;
-  }
-  .status-dot {
-    width: 10px; height: 10px; border-radius: 50%; display: inline-block;
-  }
-  .status-dot.online { background: #4caf50; }
-  .status-dot.offline { background: #f44336; }
-  .role-badge {
-    padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
-  }
-  .role-badge.teacher { background: #fff3e0; color: #e65100; }
-  .role-badge.student { background: #e3f2fd; color: #1565c0; }
-  .user-name-display { font-weight: 600; color: #333; }
 
-  .tabs {
-    background: #fff;
-    padding: 0 24px;
+  .badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .badge-teacher {
+    background: #fff3e0;
+    color: var(--accent);
+  }
+
+  .badge-student {
+    background: #e8f0fe;
+    color: var(--primary);
+  }
+
+  .online-indicator {
     display: flex;
-    gap: 4px;
-    border-bottom: 1px solid #e8e8e8;
-    position: sticky;
-    top: 64px;
-    z-index: 90;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-light);
   }
-  .tab {
-    padding: 14px 24px; font-size: 16px; font-weight: 600; color: #888;
-    cursor: pointer; border-bottom: 3px solid transparent;
-    transition: color 0.2s, border-color 0.2s;
+
+  .online-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s infinite;
   }
-  .tab:hover { color: #2196f3; }
-  .tab.active { color: #2196f3; border-bottom-color: #2196f3; }
 
-  .main-app { display: none; max-width: 1200px; margin: 0 auto; padding: 24px; }
-  .view { display: none; }
-  .view.active { display: block; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
 
-  .layout { display: flex; gap: 24px; flex-wrap: wrap; }
-  .left-panel { flex: 1; min-width: 300px; }
-  .right-panel { flex: 1; min-width: 300px; }
-
+  /* ========== 卡片 ========== */
   .card {
-    background: #fff; border-radius: 12px; padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
   }
+
   .card h3 {
-    font-size: 16px; color: #888; margin-bottom: 12px;
-    text-transform: uppercase; letter-spacing: 1px;
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .question-display {
-    font-size: 28px; line-height: 1.6; font-weight: 700; color: #1a1a2e;
-    min-height: 50px; word-break: break-all;
-  }
-  .question-display.empty { color: #ccc; font-weight: 400; font-size: 20px; }
-
-  .teacher-answer-display {
-    margin-top: 16px; padding: 16px; background: #fff8e1; border-radius: 8px;
-    border-left: 4px solid #ff9800; font-size: 22px; display: none;
-  }
-  .teacher-answer-display.show { display: block; }
-  .teacher-answer-display .ta-label {
-    font-size: 13px; color: #e65100; font-weight: 600; margin-bottom: 6px;
+    background: #fafafa;
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    font-size: 20px;
+    line-height: 1.8;
+    min-height: 50px;
   }
 
-  .input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  input[type="text"], textarea {
-    flex: 1; min-width: 200px; padding: 12px 16px; font-size: 16px;
-    border: 2px solid #e0e0e0; border-radius: 8px; outline: none;
-    transition: border-color 0.2s; font-family: inherit;
+  .question-meta {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 8px;
   }
-  input[type="text"]:focus, textarea:focus { border-color: #2196f3; }
-  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 
-  button {
-    padding: 12px 24px; font-size: 16px; border: none; border-radius: 8px;
-    cursor: pointer; font-weight: 600; transition: background 0.2s, transform 0.1s;
-    white-space: nowrap;
+  .input-row {
+    display: flex;
+    gap: 10px;
   }
-  button:active { transform: scale(0.97); }
-  .btn-primary { background: #2196f3; color: #fff; }
-  .btn-primary:hover { background: #1976d2; }
-  .btn-orange { background: #ff9800; color: #fff; }
-  .btn-orange:hover { background: #f57c00; }
-  .btn-danger { background: #f44336; color: #fff; }
-  .btn-danger:hover { background: #d32f2f; }
-  .btn-outline {
-    background: #fff; color: #666; border: 2px solid #ddd; padding: 8px 16px; font-size: 13px;
-  }
-  .btn-outline:hover { background: #f5f5f5; }
-  .btn-ghost {
-    background: transparent; color: #2196f3; padding: 8px 14px; font-size: 14px;
-  }
-  .btn-ghost:hover { background: #e3f2fd; }
 
-  .answer-wall { max-height: 500px; overflow-y: auto; }
-  .answer-item {
-    padding: 12px 16px; margin-bottom: 8px; background: #f9fafb;
-    border-radius: 8px; border-left: 3px solid #2196f3;
+  .input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+
+  .input-row input:focus {
+    border-color: var(--primary);
+  }
+
+  /* ========== 答案墙 ========== */
+  .answer-wall {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .answer-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     animation: slideIn 0.3s ease;
   }
-  .answer-item.teacher-ans { background: #fff8e1; border-left-color: #ff9800; }
-  .answer-item .ans-name { font-size: 13px; font-weight: 600; color: #666; }
-  .answer-item .ans-text { font-size: 18px; margin-top: 4px; word-break: break-word; }
-  .answer-item .ans-time { font-size: 12px; color: #aaa; margin-top: 4px; }
+
   @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity:0; transform:translateY(-10px); }
+    to { opacity:1; transform:translateY(0); }
   }
 
-  .empty-state { text-align: center; padding: 40px; color: #ccc; font-size: 16px; }
-  .divider { height: 1px; background: #eee; margin: 20px 0; }
-
-  .online-users { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .online-user-tag {
-    font-size: 12px; padding: 3px 10px; border-radius: 10px;
-    background: #e8f5e9; color: #2e7d32;
-  }
-  .online-user-tag.teacher-tag { background: #fff3e0; color: #e65100; }
-
-  /* 论坛样式 */
-  .forum-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
-  }
-  .forum-header h2 { font-size: 22px; color: #1a1a2e; }
-
-  .new-post-form { display: none; margin-bottom: 20px; }
-  .new-post-form.show { display: block; }
-  .new-post-form input, .new-post-form textarea {
-    width: 100%; margin-bottom: 12px; display: block;
-  }
-  .new-post-form .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
-  .post-list { display: flex; flex-direction: column; gap: 10px; }
-  .post-item {
-    background: #fff; border-radius: 10px; padding: 16px 20px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    cursor: pointer; transition: box-shadow 0.2s, transform 0.1s;
-    animation: slideIn 0.3s ease;
-  }
-  .post-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-  .post-item:active { transform: scale(0.998); }
-  .post-item .post-title {
-    font-size: 18px; font-weight: 700; color: #1a1a2e;
-    margin-bottom: 6px; word-break: break-word;
-  }
-  .post-item .post-meta {
-    font-size: 13px; color: #888; display: flex; gap: 12px; flex-wrap: wrap;
-  }
-  .post-item .meta-author { color: #1565c0; font-weight: 600; }
-  .post-item .meta-author.teacher { color: #e65100; }
-  .post-item .meta-replies {
-    background: #e3f2fd; color: #1565c0;
-    padding: 2px 10px; border-radius: 10px; font-weight: 600;
+  .answer-card .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    flex-shrink: 0;
   }
 
-  .post-detail-card { background: #fff; border-radius: 12px; padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px;
+  .answer-card .answer-content {
+    flex: 1;
+    font-size: 15px;
+    word-break: break-word;
   }
-  .post-detail-card .pd-title {
-    font-size: 24px; font-weight: 700; color: #1a1a2e;
-    margin-bottom: 12px; word-break: break-word;
-  }
-  .post-detail-card .pd-meta {
-    font-size: 13px; color: #888; margin-bottom: 16px;
-    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
-  }
-  .post-detail-card .pd-content {
-    font-size: 16px; line-height: 1.7; color: #333;
-    white-space: pre-wrap; word-break: break-word;
-    padding: 16px; background: #f9fafb; border-radius: 8px;
-  }
-  .post-detail-card .pd-content.empty { color: #ccc; font-style: italic; }
 
-  .reply-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-  .reply-item {
-    padding: 12px 16px; background: #f9fafb; border-radius: 8px;
-    border-left: 3px solid #2196f3; animation: slideIn 0.3s ease;
+  .answer-card .answer-time {
+    font-size: 11px;
+    color: var(--text-light);
+    flex-shrink: 0;
   }
-  .reply-item.teacher-reply { border-left-color: #ff9800; background: #fff8e1; }
-  .reply-item .reply-meta {
-    font-size: 13px; color: #666; font-weight: 600; margin-bottom: 4px;
-  }
-  .reply-item .reply-meta .teacher-tag-inline { color: #e65100; }
-  .reply-item .reply-content {
-    font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
-  }
-  .reply-item .reply-time { font-size: 12px; color: #aaa; margin-top: 4px; }
 
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: rgba(33, 33, 33, 0.92); color: #fff;
-    padding: 10px 20px; border-radius: 20px; font-size: 14px;
-    z-index: 1000; opacity: 0; pointer-events: none;
-    transition: opacity 0.2s, transform 0.2s;
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  .empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+
+  /* ========== 响应式 ========== */
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .auth-card { padding: 24px 18px; margin-top: 20px; }
+    .auth-card h1 { font-size: 22px; }
+    .input-row { flex-direction: column; }
+    .header { flex-direction: column; align-items: flex-start; }
+    .question-display { font-size: 17px; }
+  }
 </style>
 </head>
 <body>
+<div class="container" id="app">
 
-<div class="main-app" id="mainApp">
-  <div class="top-bar">
-    <div class="title">📚 课堂互动 · 在线论坛</div>
-    <div class="info">
-      <span class="user-name-display" id="displayName"></span>
-      <span class="role-badge teacher" id="badgeTeacher" style="display:none">老师</span>
-      <span class="role-badge student" id="badgeStudent" style="display:none">学生</span>
-      <span id="statusText">
-        <span class="status-dot offline" id="statusDot"></span> 连接中...
-      </span>
-      <span id="userCount">在线: 0 人</span>
-      <button class="btn-outline" onclick="logout()">退出</button>
+  <!-- ==================== 登录/注册页面 ==================== -->
+  <div class="auth-card" id="authView">
+    <h1>欢迎进入课堂互动</h1>
+    <p class="subtitle">在线答题 · 实时互动 · 多端同步</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab" onclick="switchTab('login')">登录</button>
+      <button class="auth-tab" id="registerTab" onclick="switchTab('register')">注册</button>
     </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>用户名</label>
+        <input id="loginUsername" placeholder="请输入用户名" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input id="loginPassword" type="password" placeholder="请输入密码" required autocomplete="current-password">
+      </div>
+      <div id="loginError" class="error-msg" style="display:none"></div>
+      <button type="submit" class="btn btn-primary" style="margin-top:8px">登 录</button>
+    </form>
+
+    <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label>用户名</label>
+        <input id="regUsername" placeholder="2-20个字符" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input id="regPassword" type="password" placeholder="至少4位密码" required autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>选择身份</label>
+        <div class="role-selector">
+          <div class="role-btn selected" id="roleStudent" onclick="selectRole('student')">学生</div>
+          <div class="role-btn" id="roleTeacher" onclick="selectRole('teacher')">教师</div>
+        </div>
+      </div>
+      <div id="regError" class="error-msg" style="display:none"></div>
+      <button type="submit" class="btn btn-accent" style="margin-top:8px">注 册</button>
+    </form>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" data-tab="classroom" onclick="switchTab('classroom')">📝 课堂问答</div>
-    <div class="tab" data-tab="forum" onclick="switchTab('forum')">💬 在线论坛</div>
-  </div>
+  <!-- ==================== 主页面（登录后可见） ==================== -->
+  <div id="mainView" style="display:none">
 
-  <div class="main-app-inner" style="padding:24px;">
-
-    <!-- 课堂问答视图 -->
-    <div class="view active" id="viewClassroom">
-      <div class="layout">
-        <div class="left-panel">
-          <div class="card">
-            <h3>📝 当前题目</h3>
-            <div class="question-display empty" id="questionDisplay">等待老师发布题目...</div>
-          </div>
-
-          <div class="card" id="teacherPanel" style="display:none;">
-            <h3>👩‍🏫 老师操作区</h3>
-            <div class="input-row" style="margin-bottom:12px;">
-              <input type="text" id="teacherQuestionInput" placeholder="输入新题目，例如：3 + 5 = ?">
-              <button class="btn-orange" onclick="publishQuestion()">发布题目</button>
-            </div>
-            <div class="divider"></div>
-            <div class="input-row" style="margin-bottom:12px;">
-              <input type="text" id="teacherAnswerInput" placeholder="老师作答">
-              <button class="btn-orange" onclick="teacherAnswer()">老师作答</button>
-            </div>
-            <div style="display:flex;gap:10px;">
-              <button class="btn-danger" onclick="clearAllAnswers()">清空答案墙</button>
-              <button class="btn-outline" onclick="clearQuestion()" style="padding:12px 24px;font-size:16px;">清空题目</button>
-            </div>
-          </div>
-
-          <div class="card" id="studentPanel">
-            <h3>✍️ 学生答题区</h3>
-            <div class="input-row">
-              <input type="text" id="studentAnswerInput" placeholder="输入你的答案...">
-              <button class="btn-primary" onclick="submitStudentAnswer()">提交答案</button>
-            </div>
-          </div>
-
-          <div class="card teacher-answer-display" id="teacherAnswerBox">
-            <div class="ta-label">👩‍🏫 老师答案</div>
-            <div id="teacherAnswerText"></div>
-          </div>
-
-          <div class="card">
-            <h3>👥 在线用户</h3>
-            <div class="online-users" id="onlineUsersList">
-              <span class="empty-state" style="padding:8px;">暂无</span>
-            </div>
-          </div>
+    <div class="header">
+      <div class="user-info">
+        <span id="headerUsername" style="font-weight:600"></span>
+        <span id="headerBadge" class="badge"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="online-indicator">
+          <span class="online-dot"></span>
+          <span id="onlineCount">在线: 0</span>
         </div>
-
-        <div class="right-panel">
-          <div class="card">
-            <h3>🧱 答案展示墙</h3>
-            <div class="answer-wall" id="answerWall">
-              <div class="empty-state">暂无答案，等待学生提交...</div>
-            </div>
-          </div>
-        </div>
+        <button class="btn btn-sm" style="background:#eee;color:var(--text)" onclick="logout()">退出登录</button>
       </div>
     </div>
 
-    <!-- 论坛视图 -->
-    <div class="view" id="viewForum">
-      <!-- 帖子列表 -->
-      <div id="forumListView">
-        <div class="forum-header">
-          <h2>💬 论坛 · 所有帖子</h2>
-          <button class="btn-primary" onclick="toggleNewPostForm()">+ 发新帖</button>
-        </div>
-
-        <div class="card new-post-form" id="newPostForm">
-          <h3>发布新帖子</h3>
-          <input type="text" id="newPostTitle" placeholder="标题（必填，最长 200 字）" maxlength="200">
-          <textarea id="newPostContent" placeholder="正文内容（最长 5000 字）" maxlength="5000"></textarea>
-          <div class="form-actions">
-            <button class="btn-outline" style="padding:12px 24px;font-size:16px;" onclick="toggleNewPostForm()">取消</button>
-            <button class="btn-primary" onclick="submitNewPost()">发布</button>
-          </div>
-        </div>
-
-        <div class="post-list" id="postList">
-          <div class="empty-state">暂无帖子，快来发第一帖！</div>
-        </div>
+    <div class="card" id="teacherPanel" style="display:none">
+      <h3>教师控制面板</h3>
+      <div class="input-row">
+        <input id="questionInput" placeholder="输入新的课堂题目" maxlength="200">
+        <button class="btn btn-accent btn-sm" onclick="setQuestion()">发布题目</button>
       </div>
-
-      <!-- 帖子详情 -->
-      <div id="forumDetailView" style="display:none;">
-        <button class="btn-ghost" onclick="backToList()" style="margin-bottom:12px;">← 返回列表</button>
-
-        <div class="post-detail-card" id="postDetailCard">
-          <div class="pd-title" id="pdTitle"></div>
-          <div class="pd-meta" id="pdMeta"></div>
-          <div class="pd-content" id="pdContent"></div>
-        </div>
-
-        <div class="card">
-          <h3>💬 回复 (<span id="replyCount">0</span>)</h3>
-          <div class="reply-list" id="replyList">
-            <div class="empty-state">还没有回复，第一个来回复吧～</div>
-          </div>
-          <div class="divider"></div>
-          <textarea id="replyInput" placeholder="输入回复内容..." maxlength="2000"></textarea>
-          <div style="margin-top:10px;display:flex;justify-content:flex-end;">
-            <button class="btn-primary" onclick="submitReply()">发表回复</button>
-          </div>
-        </div>
+      <div style="margin-top:8px">
+        <button class="btn btn-danger btn-sm" onclick="clearAnswers()">清空所有答案</button>
       </div>
     </div>
 
+    <div class="card" id="questionCard">
+      <h3 id="questionTitle">当前题目</h3>
+      <div class="question-display" id="questionText">请等待老师出题...</div>
+      <div class="question-meta" id="questionMeta"></div>
+    </div>
+
+    <div class="card" id="studentPanel" style="display:none">
+      <h3>提交你的答案</h3>
+      <div class="input-row">
+        <input id="answerInput" placeholder="在此输入你的答案..." maxlength="500">
+        <button class="btn btn-primary btn-sm" onclick="submitAnswer()">提交</button>
+      </div>
+      <div id="answerError" class="error-msg" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h3>
+        答案展示墙
+        <span style="font-size:13px;font-weight:normal;color:var(--text-light);margin-left:4px" id="answerCount"></span>
+      </h3>
+      <div class="answer-wall" id="answerWall">
+        <div class="empty-state">
+          <div class="icon"></div>
+          <p>还没有人提交答案，快来抢沙发吧！</p>
+        </div>
+      </div>
+    </div>
   </div>
+
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-const TOKEN = localStorage.getItem("auth_token")
-const USERNAME = localStorage.getItem("auth_username")
-const USER_ROLE = localStorage.getItem("auth_role")
+let currentUser = null
+let selectedRole = 'student'
+let pollTimer = null
+let knownAnswerIds = new Set()
+let lastQuestionText = ''
 
-if (!TOKEN || !USERNAME || !USER_ROLE) {
-  location.replace("/login.html")
+const API = '/api'
+
+async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (currentUser && currentUser.token) {
+    headers['Authorization'] = 'Bearer ' + currentUser.token
+  }
+  const opts = { method, headers }
+  if (body) opts.body = JSON.stringify(body)
+  const res = await fetch(API + path, opts)
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || '请求失败')
+  return data
 }
 
-let ws = null
-let reconnectTimer = null
-const ROOM_ID = "default"
-
-// 论坛状态
-let posts = []              // 列表缓存：[{ id, title, authorName, authorRole, createdAt, replyCount, lastReplyAt }]
-let currentPostId = null    // 当前正在查看的帖子 id
-let currentPost = null      // 当前帖子详情
-let currentReplies = []     // 当前帖子的回复列表
-
-document.getElementById("displayName").textContent = USERNAME
-document.getElementById("mainApp").style.display = "block"
-
-if (USER_ROLE === "teacher") {
-  document.getElementById("badgeTeacher").style.display = "inline"
-  document.getElementById("teacherPanel").style.display = "block"
-  document.getElementById("studentPanel").style.display = "none"
-} else {
-  document.getElementById("badgeStudent").style.display = "inline"
-  document.getElementById("teacherPanel").style.display = "none"
-  document.getElementById("studentPanel").style.display = "block"
+function switchTab(tab) {
+  document.getElementById('loginTab').classList.toggle('active', tab === 'login')
+  document.getElementById('registerTab').classList.toggle('active', tab === 'register')
+  document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none'
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none'
+  document.getElementById('loginError').style.display = 'none'
+  document.getElementById('regError').style.display = 'none'
 }
 
-function switchTab(name) {
-  document.querySelectorAll(".tab").forEach(t => {
-    t.classList.toggle("active", t.dataset.tab === name)
-  })
-  document.getElementById("viewClassroom").classList.toggle("active", name === "classroom")
-  document.getElementById("viewForum").classList.toggle("active", name === "forum")
+function selectRole(role) {
+  selectedRole = role
+  document.getElementById('roleStudent').classList.toggle('selected', role === 'student')
+  document.getElementById('roleTeacher').classList.toggle('selected', role === 'teacher')
+}
+
+async function handleLogin(e) {
+  e.preventDefault()
+  const username = document.getElementById('loginUsername').value.trim()
+  const password = document.getElementById('loginPassword').value
+  const errEl = document.getElementById('loginError')
+  errEl.style.display = 'none'
+
+  try {
+    const data = await api('POST', '/login', { username, password })
+    setCurrentUser(data)
+    showMainView()
+  } catch (err) {
+    errEl.textContent = err.message
+    errEl.style.display = ''
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault()
+  const username = document.getElementById('regUsername').value.trim()
+  const password = document.getElementById('regPassword').value
+  const errEl = document.getElementById('regError')
+  errEl.style.display = 'none'
+
+  try {
+    const data = await api('POST', '/register', { username, password, role: selectedRole })
+    setCurrentUser(data)
+    showMainView()
+  } catch (err) {
+    errEl.textContent = err.message
+    errEl.style.display = ''
+  }
+}
+
+function setCurrentUser(data) {
+  currentUser = { username: data.username, role: data.role, token: data.token }
+  sessionStorage.setItem('auth', JSON.stringify(currentUser))
+}
+
+function showMainView() {
+  document.getElementById('authView').style.display = 'none'
+  document.getElementById('mainView').style.display = ''
+
+  document.getElementById('headerUsername').textContent = currentUser.username
+
+  const badge = document.getElementById('headerBadge')
+  if (currentUser.role === 'teacher') {
+    badge.textContent = '教师'
+    badge.className = 'badge badge-teacher'
+  } else {
+    badge.textContent = '学生'
+    badge.className = 'badge badge-student'
+  }
+
+  document.getElementById('teacherPanel').style.display = currentUser.role === 'teacher' ? '' : 'none'
+  document.getElementById('studentPanel').style.display = currentUser.role === 'student' ? '' : 'none'
+  document.getElementById('questionTitle').textContent = currentUser.role === 'teacher' ? '当前题目（发布后学生可见）' : '当前题目'
+
+  startPolling()
 }
 
 function logout() {
-  if (ws) { ws.close(1000, "logout"); ws = null }
-  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
-  localStorage.removeItem("auth_token")
-  localStorage.removeItem("auth_username")
-  localStorage.removeItem("auth_role")
-  location.replace("/login.html")
+  stopPolling()
+  currentUser = null
+  knownAnswerIds.clear()
+  lastQuestionText = ''
+  sessionStorage.removeItem('auth')
+
+  document.getElementById('authView').style.display = ''
+  document.getElementById('mainView').style.display = 'none'
+  document.getElementById('loginUsername').value = ''
+  document.getElementById('loginPassword').value = ''
+  document.getElementById('regUsername').value = ''
+  document.getElementById('regPassword').value = ''
+  document.getElementById('answerWall').innerHTML = '<div class="empty-state"><div class="icon"></div><p>还没有人提交答案，快来抢沙发吧！</p></div>'
+  document.getElementById('questionText').textContent = '请等待老师出题...'
+  document.getElementById('questionMeta').textContent = ''
+  document.getElementById('answerCount').textContent = ''
+  document.getElementById('onlineCount').textContent = '在线: 0'
 }
 
-function connect() {
-  if (ws && ws.readyState === WebSocket.OPEN) return
-
-  const proto = location.protocol === "https:" ? "wss:" : "ws:"
-  const wsUrl = `${proto}//${location.host}/ws?room=${ROOM_ID}&token=${encodeURIComponent(TOKEN)}`
-
+async function setQuestion() {
+  const input = document.getElementById('questionInput')
+  const text = input.value.trim()
+  if (!text) return
   try {
-    ws = new WebSocket(wsUrl)
-  } catch (e) {
-    setStatus(false, "连接失败")
-    scheduleReconnect()
-    return
-  }
-
-  ws.onopen = () => {
-    setStatus(true, "已连接")
-    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
-    ws.send(JSON.stringify({ type: "join", name: USERNAME, role: USER_ROLE }))
-  }
-
-  ws.onmessage = (event) => {
-    let data
-    try { data = JSON.parse(event.data) } catch (e) { return }
-    handleMessage(data)
-  }
-
-  ws.onclose = (evt) => {
-    setStatus(false, "已断开")
-    ws = null
-    if (evt.code !== 1000) scheduleReconnect()
-  }
-
-  ws.onerror = () => {
-    setStatus(false, "连接错误")
+    await api('POST', '/question', { question: text })
+    input.value = ''
+    await loadQuestion()
+    await loadAnswers()
+  } catch (err) {
+    alert(err.message)
   }
 }
 
-function scheduleReconnect() {
-  if (reconnectTimer) return
-  reconnectTimer = setTimeout(() => {
-    reconnectTimer = null
-    connect()
-  }, 3000)
-}
+async function submitAnswer() {
+  const input = document.getElementById('answerInput')
+  const errEl = document.getElementById('answerError')
+  const text = input.value.trim()
+  errEl.style.display = 'none'
 
-function setStatus(online, text) {
-  const txt = document.getElementById("statusText")
-  txt.innerHTML = `<span class="status-dot ${online ? "online" : "offline"}"></span> ${text}`
-}
-
-function send(data) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    toast("连接已断开，正在重连中...")
-    return false
-  }
-  ws.send(JSON.stringify(data))
-  return true
-}
-
-function handleMessage(data) {
-  switch (data.type) {
-    case "sync":
-      if (data.question) {
-        document.getElementById("questionDisplay").textContent = data.question
-        document.getElementById("questionDisplay").classList.remove("empty")
-      } else {
-        document.getElementById("questionDisplay").textContent = "等待老师发布题目..."
-        document.getElementById("questionDisplay").classList.add("empty")
-      }
-      if (data.teacherAnswer) {
-        document.getElementById("teacherAnswerBox").classList.add("show")
-        document.getElementById("teacherAnswerText").textContent = data.teacherAnswer
-      } else {
-        document.getElementById("teacherAnswerBox").classList.remove("show")
-        document.getElementById("teacherAnswerText").textContent = ""
-      }
-      if (data.answers && data.answers.length > 0) {
-        renderAllAnswers(data.answers)
-      } else {
-        document.getElementById("answerWall").innerHTML = '<div class="empty-state">暂无答案，等待学生提交...</div>'
-      }
-      posts = data.posts || []
-      renderPostList()
-      break
-
-    case "question_update":
-      document.getElementById("questionDisplay").textContent = data.question
-      document.getElementById("questionDisplay").classList.remove("empty")
-      break
-
-    case "question_cleared":
-      document.getElementById("questionDisplay").textContent = "等待老师发布题目..."
-      document.getElementById("questionDisplay").classList.add("empty")
-      document.getElementById("teacherAnswerBox").classList.remove("show")
-      document.getElementById("teacherAnswerText").textContent = ""
-      break
-
-    case "teacher_answer_update":
-      if (data.teacherAnswer) {
-        document.getElementById("teacherAnswerBox").classList.add("show")
-        document.getElementById("teacherAnswerText").textContent = data.teacherAnswer
-      }
-      break
-
-    case "new_answer":
-      addAnswerToWall(data.answer)
-      break
-
-    case "answers_cleared":
-      document.getElementById("answerWall").innerHTML = '<div class="empty-state">答案已清空</div>'
-      break
-
-    case "user_count":
-      document.getElementById("userCount").textContent = `在线: ${data.count} 人`
-      if (data.users) {
-        const list = document.getElementById("onlineUsersList")
-        if (data.users.length === 0) {
-          list.innerHTML = '<span class="empty-state" style="padding:8px;">暂无</span>'
-        } else {
-          list.innerHTML = data.users.map(u => {
-            const cls = u.role === "teacher" ? "online-user-tag teacher-tag" : "online-user-tag"
-            const icon = u.role === "teacher" ? "👩‍🏫" : "👨‍🎓"
-            return `<span class="${cls}">${icon} ${escapeHtml(u.name)}</span>`
-          }).join("")
-        }
-      }
-      break
-
-    case "new_post":
-      onNewPost(data.post)
-      break
-
-    case "post_detail":
-      renderPostDetail(data.post, data.replies)
-      break
-
-    case "new_reply":
-      onNewReply(data.reply, data.postId, data.lastReplyAt)
-      break
-
-    case "post_deleted":
-      onPostDeleted(data.postId)
-      break
-
-    case "error":
-      toast(data.message)
-      break
+  if (!text) return
+  try {
+    const data = await api('POST', '/answer', { answer: text })
+    input.value = ''
+    knownAnswerIds.add(data.id)
+    addAnswerToWall(data, true)
+    updateAnswerCount()
+  } catch (err) {
+    errEl.textContent = err.message
+    errEl.style.display = ''
   }
 }
 
-/* ===== 课堂问答 ===== */
-
-function renderAllAnswers(answers) {
-  const wall = document.getElementById("answerWall")
-  if (answers.length === 0) {
-    wall.innerHTML = '<div class="empty-state">暂无答案，等待学生提交...</div>'
-    return
-  }
-  wall.innerHTML = answers.map(a => answerHTML(a)).join("")
-}
-
-function addAnswerToWall(answer) {
-  const wall = document.getElementById("answerWall")
-  const empty = wall.querySelector(".empty-state")
-  if (empty) { wall.innerHTML = "" }
-  wall.insertAdjacentHTML("afterbegin", answerHTML(answer))
-}
-
-function answerHTML(a) {
-  const cls = a.role === "teacher" ? "answer-item teacher-ans" : "answer-item"
-  const roleLabel = a.role === "teacher" ? "👩‍🏫 老师" : "👨‍🎓 " + escapeHtml(a.name)
-  return `<div class="${cls}">
-    <div class="ans-name">${roleLabel}</div>
-    <div class="ans-text">${escapeHtml(a.text)}</div>
-    <div class="ans-time">${a.time}</div>
-  </div>`
-}
-
-function publishQuestion() {
-  const input = document.getElementById("teacherQuestionInput")
-  const question = input.value.trim()
-  if (!question) return
-  if (!send({ type: "set_question", question })) return
-  input.value = ""
-}
-
-function teacherAnswer() {
-  const input = document.getElementById("teacherAnswerInput")
-  const answer = input.value.trim()
-  if (!answer) return
-  if (!send({ type: "teacher_answer", answer })) return
-  send({ type: "submit_answer", answer })
-  input.value = ""
-}
-
-function submitStudentAnswer() {
-  const input = document.getElementById("studentAnswerInput")
-  const answer = input.value.trim()
-  if (!answer) return
-  if (!send({ type: "submit_answer", answer })) return
-  input.value = ""
-}
-
-function clearAllAnswers() {
-  if (!confirm("确定要清空答案墙吗？")) return
-  send({ type: "clear_answers" })
-}
-
-function clearQuestion() {
-  if (!confirm("确定要清空当前题目吗？")) return
-  send({ type: "clear_question" })
-}
-
-/* ===== 论坛 ===== */
-
-function toggleNewPostForm() {
-  const form = document.getElementById("newPostForm")
-  const show = !form.classList.contains("show")
-  form.classList.toggle("show", show)
-  if (show) {
-    setTimeout(() => document.getElementById("newPostTitle").focus(), 50)
+async function clearAnswers() {
+  if (!confirm('确定要清空所有答案吗？此操作不可撤销。')) return
+  try {
+    await api('DELETE', '/answers')
+    knownAnswerIds.clear()
+    document.getElementById('answerWall').innerHTML = '<div class="empty-state"><div class="icon"></div><p>还没有人提交答案，快来抢沙发吧！</p></div>'
+    document.getElementById('answerCount').textContent = ''
+  } catch (err) {
+    alert(err.message)
   }
 }
 
-function submitNewPost() {
-  const titleEl = document.getElementById("newPostTitle")
-  const contentEl = document.getElementById("newPostContent")
-  const title = titleEl.value.trim()
-  const content = contentEl.value.trim()
-  if (!title) { toast("请填写标题"); return }
-  if (!send({ type: "create_post", title, content })) return
-  titleEl.value = ""
-  contentEl.value = ""
-  document.getElementById("newPostForm").classList.remove("show")
-  toast("发布成功")
-}
-
-function renderPostList() {
-  const list = document.getElementById("postList")
-  if (posts.length === 0) {
-    list.innerHTML = '<div class="empty-state">暂无帖子，快来发第一帖！</div>'
-    return
-  }
-  list.innerHTML = posts.map(p => postItemHTML(p)).join("")
-}
-
-function postItemHTML(p) {
-  const authorClass = p.authorRole === "teacher" ? "meta-author teacher" : "meta-author"
-  const icon = p.authorRole === "teacher" ? "👩‍🏫" : "👨‍🎓"
-  return `<div class="post-item" onclick="openPost('${escapeAttr(p.id)}')">
-    <div class="post-title">${escapeHtml(p.title)}</div>
-    <div class="post-meta">
-      <span class="${authorClass}">${icon} ${escapeHtml(p.authorName)}</span>
-      <span>${formatTime(p.createdAt)}</span>
-      <span class="meta-replies">${p.replyCount} 回复</span>
-      ${p.lastReplyAt > p.createdAt ? `<span>最新回复 ${formatTime(p.lastReplyAt)}</span>` : ""}
-    </div>
-  </div>`
-}
-
-function openPost(postId) {
-  currentPostId = postId
-  document.getElementById("forumListView").style.display = "none"
-  document.getElementById("forumDetailView").style.display = "block"
-  document.getElementById("pdTitle").textContent = "加载中..."
-  document.getElementById("pdMeta").innerHTML = ""
-  document.getElementById("pdContent").textContent = ""
-  document.getElementById("pdContent").classList.remove("empty")
-  document.getElementById("replyList").innerHTML = '<div class="empty-state">加载中...</div>'
-  document.getElementById("replyCount").textContent = "0"
-  send({ type: "load_post", postId })
-}
-
-function backToList() {
-  currentPostId = null
-  currentPost = null
-  currentReplies = []
-  document.getElementById("forumDetailView").style.display = "none"
-  document.getElementById("forumListView").style.display = "block"
-}
-
-function renderPostDetail(post, replies) {
-  if (!post || post.id !== currentPostId) return
-  currentPost = post
-  currentReplies = replies || []
-  document.getElementById("pdTitle").textContent = post.title
-  const authorClass = post.authorRole === "teacher" ? "teacher-tag-inline" : ""
-  const icon = post.authorRole === "teacher" ? "👩‍🏫" : "👨‍🎓"
-  const canDelete = USER_ROLE === "teacher" || post.authorName === USERNAME
-  document.getElementById("pdMeta").innerHTML = `
-    <span class="${authorClass}">${icon} ${escapeHtml(post.authorName)}</span>
-    <span>${formatTime(post.createdAt)}</span>
-    ${canDelete ? `<button class="btn-outline" onclick="deleteCurrentPost()" style="margin-left:auto;">删除</button>` : ""}
-  `
-  const contentEl = document.getElementById("pdContent")
-  if (post.content) {
-    contentEl.textContent = post.content
-    contentEl.classList.remove("empty")
-  } else {
-    contentEl.textContent = "（无正文）"
-    contentEl.classList.add("empty")
-  }
-  renderReplies()
-}
-
-function renderReplies() {
-  document.getElementById("replyCount").textContent = currentReplies.length
-  const list = document.getElementById("replyList")
-  if (currentReplies.length === 0) {
-    list.innerHTML = '<div class="empty-state">还没有回复，第一个来回复吧～</div>'
-    return
-  }
-  list.innerHTML = currentReplies.map(r => replyItemHTML(r)).join("")
-}
-
-function replyItemHTML(r) {
-  const cls = r.authorRole === "teacher" ? "reply-item teacher-reply" : "reply-item"
-  const tagCls = r.authorRole === "teacher" ? "teacher-tag-inline" : ""
-  const icon = r.authorRole === "teacher" ? "👩‍🏫" : "👨‍🎓"
-  return `<div class="${cls}">
-    <div class="reply-meta"><span class="${tagCls}">${icon} ${escapeHtml(r.authorName)}</span></div>
-    <div class="reply-content">${escapeHtml(r.content)}</div>
-    <div class="reply-time">${formatTime(r.createdAt)}</div>
-  </div>`
-}
-
-function submitReply() {
-  if (!currentPostId) return
-  const input = document.getElementById("replyInput")
-  const content = input.value.trim()
-  if (!content) { toast("请输入回复内容"); return }
-  if (!send({ type: "create_reply", postId: currentPostId, content })) return
-  input.value = ""
-}
-
-function deleteCurrentPost() {
-  if (!currentPostId) return
-  if (!confirm("确定要删除这个帖子吗？回复也会一起删除。")) return
-  send({ type: "delete_post", postId: currentPostId })
-}
-
-function onNewPost(post) {
-  posts.unshift(post)
-  renderPostList()
-  if (post.authorName === USERNAME) toast("帖子发布成功")
-}
-
-function onNewReply(reply, postId, lastReplyAt) {
-  const p = posts.find(x => x.id === postId)
-  if (p) {
-    p.replyCount = (p.replyCount || 0) + 1
-    if (lastReplyAt) p.lastReplyAt = lastReplyAt
-    // 重新排序：最近回复的帖子排到前面
-    posts.sort((a, b) => (b.lastReplyAt || b.createdAt) - (a.lastReplyAt || a.createdAt))
-    if (document.getElementById("forumListView").style.display !== "none") {
-      renderPostList()
+async function loadQuestion() {
+  try {
+    const data = await api('GET', '/question')
+    const text = data.text || '请等待老师出题...'
+    document.getElementById('questionText').textContent = text
+    if (data.setBy && data.setBy !== lastQuestionText) {
+      lastQuestionText = data.setBy + '_' + data.timestamp
+      document.getElementById('questionMeta').textContent = '由 ' + data.setBy + ' 发布于 ' + formatTime(data.timestamp)
     }
-  }
-  if (currentPostId === postId) {
-    currentReplies.push(reply)
-    renderReplies()
+  } catch (err) {
+    // ignore polling errors
   }
 }
 
-function onPostDeleted(postId) {
-  posts = posts.filter(p => p.id !== postId)
-  renderPostList()
-  if (currentPostId === postId) {
-    toast("帖子已删除")
-    backToList()
+async function loadAnswers() {
+  try {
+    const data = await api('GET', '/answers')
+    if (!Array.isArray(data)) return
+    let hasNew = false
+    for (const ans of data) {
+      if (!knownAnswerIds.has(ans.id)) {
+        knownAnswerIds.add(ans.id)
+        addAnswerToWall(ans, false)
+        hasNew = true
+      }
+    }
+    if (hasNew) updateAnswerCount()
+  } catch (err) {
+    // ignore polling errors
   }
 }
 
-/* ===== 工具 ===== */
-
-function escapeHtml(str) {
-  if (str == null) return ""
-  const div = document.createElement("div")
-  div.textContent = String(str)
-  return div.innerHTML
+async function loadOnlineCount() {
+  try {
+    const data = await api('GET', '/online')
+    document.getElementById('onlineCount').textContent =
+      '在线: ' + data.total + '（学生 ' + data.students + ' / 教师 ' + data.teachers + '）'
+  } catch (err) {
+    // ignore polling errors
+  }
 }
 
-function escapeAttr(str) {
-  return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;")
+function addAnswerToWall(ans, prepend) {
+  const wall = document.getElementById('answerWall')
+  const emptyEl = wall.querySelector('.empty-state')
+  if (emptyEl) emptyEl.remove()
+
+  const card = document.createElement('div')
+  card.className = 'answer-card'
+  card.setAttribute('data-answer-id', ans.id)
+
+  if (prepend) {
+    card.style.animation = 'none'
+    card.offsetHeight
+    card.style.animation = 'slideIn 0.3s ease'
+  }
+
+  const avatar = document.createElement('div')
+  avatar.className = 'avatar'
+  avatar.textContent = (ans.username || '?')[0].toUpperCase()
+
+  const content = document.createElement('div')
+  content.className = 'answer-content'
+  content.textContent = ans.answer
+
+  const time = document.createElement('div')
+  time.className = 'answer-time'
+  time.textContent = formatTime(ans.timestamp)
+
+  card.appendChild(avatar)
+  card.appendChild(content)
+  card.appendChild(time)
+
+  if (prepend) {
+    wall.insertBefore(card, wall.firstChild)
+  } else {
+    wall.appendChild(card)
+  }
+}
+
+function updateAnswerCount() {
+  const count = document.querySelectorAll('.answer-card').length
+  document.getElementById('answerCount').textContent = count > 0 ? '（共 ' + count + ' 条）' : ''
 }
 
 function formatTime(ts) {
-  if (!ts) return ""
   const d = new Date(ts)
-  const now = new Date()
-  const sameDay = d.toDateString() === now.toDateString()
-  if (sameDay) {
-    return d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })
+  const pad = n => String(n).padStart(2, '0')
+  return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds())
+}
+
+function startPolling() {
+  if (pollTimer) return
+  loadQuestion()
+  loadAnswers()
+  loadOnlineCount()
+  pollTimer = setInterval(() => {
+    loadQuestion()
+    loadAnswers()
+    loadOnlineCount()
+  }, 1500)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
-  return d.toLocaleDateString("zh-CN") + " " + d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })
 }
 
-let toastTimer = null
-function toast(msg) {
-  const el = document.getElementById("toast")
-  el.textContent = msg
-  el.classList.add("show")
-  if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2400)
-}
-
-document.getElementById("studentAnswerInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") submitStudentAnswer()
-})
-document.getElementById("teacherAnswerInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") teacherAnswer()
-})
-document.getElementById("teacherQuestionInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") publishQuestion()
-})
-document.getElementById("replyInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submitReply()
-})
-
-connect()
+(function init() {
+  const saved = sessionStorage.getItem('auth')
+  if (saved) {
+    try {
+      const data = JSON.parse(saved)
+      currentUser = data
+      api('GET', '/me').then(() => {
+        showMainView()
+      }).catch(() => {
+        sessionStorage.removeItem('auth')
+        currentUser = null
+      })
+    } catch (e) {
+      sessionStorage.removeItem('auth')
+    }
+  }
+})()
 </script>
 </body>
 </html>
