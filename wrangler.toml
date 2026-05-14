@@ -9,10 +9,15 @@ directory = "./public"
 name = "CLASSROOM"
 class_name = "ClassroomRoom"
 
-[[durable_objects.bindings]]
-name = "USER_STORE"
-class_name = "UserStore"
+[[d1_databases]]
+binding = "DB"
+database_name = "classroom-qa-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 
 [[migrations]]
 tag = "v1"
 new_classes = ["ClassroomRoom", "UserStore"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["UserStore"]

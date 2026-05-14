@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>课堂互动问答</title>
+<title>课堂互动 · 在线论坛</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -24,10 +24,12 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    gap: 16px;
+    flex-wrap: wrap;
   }
   .top-bar .title { font-size: 20px; font-weight: 700; color: #1a1a2e; }
   .top-bar .info {
-    display: flex; align-items: center; gap: 16px; font-size: 14px;
+    display: flex; align-items: center; gap: 16px; font-size: 14px; flex-wrap: wrap;
   }
   .status-dot {
     width: 10px; height: 10px; border-radius: 50%; display: inline-block;
@@ -41,7 +43,28 @@
   .role-badge.student { background: #e3f2fd; color: #1565c0; }
   .user-name-display { font-weight: 600; color: #333; }
 
+  .tabs {
+    background: #fff;
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #e8e8e8;
+    position: sticky;
+    top: 64px;
+    z-index: 90;
+  }
+  .tab {
+    padding: 14px 24px; font-size: 16px; font-weight: 600; color: #888;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab:hover { color: #2196f3; }
+  .tab.active { color: #2196f3; border-bottom-color: #2196f3; }
+
   .main-app { display: none; max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
   .layout { display: flex; gap: 24px; flex-wrap: wrap; }
   .left-panel { flex: 1; min-width: 300px; }
   .right-panel { flex: 1; min-width: 300px; }
@@ -71,12 +94,13 @@
   }
 
   .input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  input[type="text"] {
-    flex: 1; min-width: 200px; padding: 12px 16px; font-size: 18px;
+  input[type="text"], textarea {
+    flex: 1; min-width: 200px; padding: 12px 16px; font-size: 16px;
     border: 2px solid #e0e0e0; border-radius: 8px; outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s; font-family: inherit;
   }
-  input[type="text"]:focus { border-color: #2196f3; }
+  input[type="text"]:focus, textarea:focus { border-color: #2196f3; }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 
   button {
     padding: 12px 24px; font-size: 16px; border: none; border-radius: 8px;
@@ -94,6 +118,10 @@
     background: #fff; color: #666; border: 2px solid #ddd; padding: 8px 16px; font-size: 13px;
   }
   .btn-outline:hover { background: #f5f5f5; }
+  .btn-ghost {
+    background: transparent; color: #2196f3; padding: 8px 14px; font-size: 14px;
+  }
+  .btn-ghost:hover { background: #e3f2fd; }
 
   .answer-wall { max-height: 500px; overflow-y: auto; }
   .answer-item {
@@ -101,46 +129,110 @@
     border-radius: 8px; border-left: 3px solid #2196f3;
     animation: slideIn 0.3s ease;
   }
-  .answer-item.teacher-ans {
-    background: #fff8e1; border-left-color: #ff9800;
-  }
-  .answer-item .ans-name {
-    font-size: 13px; font-weight: 600; color: #666;
-  }
-  .answer-item .ans-text {
-    font-size: 18px; margin-top: 4px; word-break: break-all;
-  }
-  .answer-item .ans-time {
-    font-size: 12px; color: #aaa; margin-top: 4px;
-  }
+  .answer-item.teacher-ans { background: #fff8e1; border-left-color: #ff9800; }
+  .answer-item .ans-name { font-size: 13px; font-weight: 600; color: #666; }
+  .answer-item .ans-text { font-size: 18px; margin-top: 4px; word-break: break-word; }
+  .answer-item .ans-time { font-size: 12px; color: #aaa; margin-top: 4px; }
   @keyframes slideIn {
     from { opacity: 0; transform: translateX(-20px); }
     to { opacity: 1; transform: translateX(0); }
   }
 
-  .empty-state {
-    text-align: center; padding: 40px; color: #ccc; font-size: 16px;
-  }
+  .empty-state { text-align: center; padding: 40px; color: #ccc; font-size: 16px; }
+  .divider { height: 1px; background: #eee; margin: 20px 0; }
 
-  .divider {
-    height: 1px; background: #eee; margin: 20px 0;
-  }
-
-  .online-users {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
-  }
+  .online-users { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .online-user-tag {
     font-size: 12px; padding: 3px 10px; border-radius: 10px;
     background: #e8f5e9; color: #2e7d32;
   }
   .online-user-tag.teacher-tag { background: #fff3e0; color: #e65100; }
+
+  /* 论坛样式 */
+  .forum-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  .forum-header h2 { font-size: 22px; color: #1a1a2e; }
+
+  .new-post-form { display: none; margin-bottom: 20px; }
+  .new-post-form.show { display: block; }
+  .new-post-form input, .new-post-form textarea {
+    width: 100%; margin-bottom: 12px; display: block;
+  }
+  .new-post-form .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .post-list { display: flex; flex-direction: column; gap: 10px; }
+  .post-item {
+    background: #fff; border-radius: 10px; padding: 16px 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    cursor: pointer; transition: box-shadow 0.2s, transform 0.1s;
+    animation: slideIn 0.3s ease;
+  }
+  .post-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .post-item:active { transform: scale(0.998); }
+  .post-item .post-title {
+    font-size: 18px; font-weight: 700; color: #1a1a2e;
+    margin-bottom: 6px; word-break: break-word;
+  }
+  .post-item .post-meta {
+    font-size: 13px; color: #888; display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .post-item .meta-author { color: #1565c0; font-weight: 600; }
+  .post-item .meta-author.teacher { color: #e65100; }
+  .post-item .meta-replies {
+    background: #e3f2fd; color: #1565c0;
+    padding: 2px 10px; border-radius: 10px; font-weight: 600;
+  }
+
+  .post-detail-card { background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .post-detail-card .pd-title {
+    font-size: 24px; font-weight: 700; color: #1a1a2e;
+    margin-bottom: 12px; word-break: break-word;
+  }
+  .post-detail-card .pd-meta {
+    font-size: 13px; color: #888; margin-bottom: 16px;
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  }
+  .post-detail-card .pd-content {
+    font-size: 16px; line-height: 1.7; color: #333;
+    white-space: pre-wrap; word-break: break-word;
+    padding: 16px; background: #f9fafb; border-radius: 8px;
+  }
+  .post-detail-card .pd-content.empty { color: #ccc; font-style: italic; }
+
+  .reply-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .reply-item {
+    padding: 12px 16px; background: #f9fafb; border-radius: 8px;
+    border-left: 3px solid #2196f3; animation: slideIn 0.3s ease;
+  }
+  .reply-item.teacher-reply { border-left-color: #ff9800; background: #fff8e1; }
+  .reply-item .reply-meta {
+    font-size: 13px; color: #666; font-weight: 600; margin-bottom: 4px;
+  }
+  .reply-item .reply-meta .teacher-tag-inline { color: #e65100; }
+  .reply-item .reply-content {
+    font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+  }
+  .reply-item .reply-time { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(33, 33, 33, 0.92); color: #fff;
+    padding: 10px 20px; border-radius: 20px; font-size: 14px;
+    z-index: 1000; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 </style>
 </head>
 <body>
 
 <div class="main-app" id="mainApp">
   <div class="top-bar">
-    <div class="title">📚 课堂互动问答</div>
+    <div class="title">📚 课堂互动 · 在线论坛</div>
     <div class="info">
       <span class="user-name-display" id="displayName"></span>
       <span class="role-badge teacher" id="badgeTeacher" style="display:none">老师</span>
@@ -153,63 +245,123 @@
     </div>
   </div>
 
+  <div class="tabs">
+    <div class="tab active" data-tab="classroom" onclick="switchTab('classroom')">📝 课堂问答</div>
+    <div class="tab" data-tab="forum" onclick="switchTab('forum')">💬 在线论坛</div>
+  </div>
+
   <div class="main-app-inner" style="padding:24px;">
-    <div class="layout">
-      <div class="left-panel">
-        <div class="card">
-          <h3>📝 当前题目</h3>
-          <div class="question-display empty" id="questionDisplay">等待老师发布题目...</div>
+
+    <!-- 课堂问答视图 -->
+    <div class="view active" id="viewClassroom">
+      <div class="layout">
+        <div class="left-panel">
+          <div class="card">
+            <h3>📝 当前题目</h3>
+            <div class="question-display empty" id="questionDisplay">等待老师发布题目...</div>
+          </div>
+
+          <div class="card" id="teacherPanel" style="display:none;">
+            <h3>👩‍🏫 老师操作区</h3>
+            <div class="input-row" style="margin-bottom:12px;">
+              <input type="text" id="teacherQuestionInput" placeholder="输入新题目，例如：3 + 5 = ?">
+              <button class="btn-orange" onclick="publishQuestion()">发布题目</button>
+            </div>
+            <div class="divider"></div>
+            <div class="input-row" style="margin-bottom:12px;">
+              <input type="text" id="teacherAnswerInput" placeholder="老师作答">
+              <button class="btn-orange" onclick="teacherAnswer()">老师作答</button>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn-danger" onclick="clearAllAnswers()">清空答案墙</button>
+              <button class="btn-outline" onclick="clearQuestion()" style="padding:12px 24px;font-size:16px;">清空题目</button>
+            </div>
+          </div>
+
+          <div class="card" id="studentPanel">
+            <h3>✍️ 学生答题区</h3>
+            <div class="input-row">
+              <input type="text" id="studentAnswerInput" placeholder="输入你的答案...">
+              <button class="btn-primary" onclick="submitStudentAnswer()">提交答案</button>
+            </div>
+          </div>
+
+          <div class="card teacher-answer-display" id="teacherAnswerBox">
+            <div class="ta-label">👩‍🏫 老师答案</div>
+            <div id="teacherAnswerText"></div>
+          </div>
+
+          <div class="card">
+            <h3>👥 在线用户</h3>
+            <div class="online-users" id="onlineUsersList">
+              <span class="empty-state" style="padding:8px;">暂无</span>
+            </div>
+          </div>
         </div>
 
-        <div class="card" id="teacherPanel" style="display:none;">
-          <h3>👩‍🏫 老师操作区</h3>
-          <div class="input-row" style="margin-bottom:12px;">
-            <input type="text" id="teacherQuestionInput" placeholder="输入新题目，例如：3 + 5 = ?">
-            <button class="btn-orange" onclick="publishQuestion()">发布题目</button>
-          </div>
-          <div class="divider"></div>
-          <div class="input-row" style="margin-bottom:12px;">
-            <input type="text" id="teacherAnswerInput" placeholder="老师作答">
-            <button class="btn-orange" onclick="teacherAnswer()">老师作答</button>
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn-danger" onclick="clearAllAnswers()">清空答案墙</button>
-            <button class="btn-outline" onclick="clearQuestion()" style="padding:12px 24px;font-size:16px;">清空题目</button>
-          </div>
-        </div>
-
-        <div class="card" id="studentPanel">
-          <h3>✍️ 学生答题区</h3>
-          <div class="input-row">
-            <input type="text" id="studentAnswerInput" placeholder="输入你的答案...">
-            <button class="btn-primary" onclick="submitStudentAnswer()">提交答案</button>
-          </div>
-        </div>
-
-        <div class="card teacher-answer-display" id="teacherAnswerBox">
-          <div class="ta-label">👩‍🏫 老师答案</div>
-          <div id="teacherAnswerText"></div>
-        </div>
-
-        <div class="card">
-          <h3>👥 在线用户</h3>
-          <div class="online-users" id="onlineUsersList">
-            <span class="empty-state" style="padding:8px;">暂无</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="right-panel">
-        <div class="card">
-          <h3>🧱 答案展示墙</h3>
-          <div class="answer-wall" id="answerWall">
-            <div class="empty-state">暂无答案，等待学生提交...</div>
+        <div class="right-panel">
+          <div class="card">
+            <h3>🧱 答案展示墙</h3>
+            <div class="answer-wall" id="answerWall">
+              <div class="empty-state">暂无答案，等待学生提交...</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 论坛视图 -->
+    <div class="view" id="viewForum">
+      <!-- 帖子列表 -->
+      <div id="forumListView">
+        <div class="forum-header">
+          <h2>💬 论坛 · 所有帖子</h2>
+          <button class="btn-primary" onclick="toggleNewPostForm()">+ 发新帖</button>
+        </div>
+
+        <div class="card new-post-form" id="newPostForm">
+          <h3>发布新帖子</h3>
+          <input type="text" id="newPostTitle" placeholder="标题（必填，最长 200 字）" maxlength="200">
+          <textarea id="newPostContent" placeholder="正文内容（最长 5000 字）" maxlength="5000"></textarea>
+          <div class="form-actions">
+            <button class="btn-outline" style="padding:12px 24px;font-size:16px;" onclick="toggleNewPostForm()">取消</button>
+            <button class="btn-primary" onclick="submitNewPost()">发布</button>
+          </div>
+        </div>
+
+        <div class="post-list" id="postList">
+          <div class="empty-state">暂无帖子，快来发第一帖！</div>
+        </div>
+      </div>
+
+      <!-- 帖子详情 -->
+      <div id="forumDetailView" style="display:none;">
+        <button class="btn-ghost" onclick="backToList()" style="margin-bottom:12px;">← 返回列表</button>
+
+        <div class="post-detail-card" id="postDetailCard">
+          <div class="pd-title" id="pdTitle"></div>
+          <div class="pd-meta" id="pdMeta"></div>
+          <div class="pd-content" id="pdContent"></div>
+        </div>
+
+        <div class="card">
+          <h3>💬 回复 (<span id="replyCount">0</span>)</h3>
+          <div class="reply-list" id="replyList">
+            <div class="empty-state">还没有回复，第一个来回复吧～</div>
+          </div>
+          <div class="divider"></div>
+          <textarea id="replyInput" placeholder="输入回复内容..." maxlength="2000"></textarea>
+          <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+            <button class="btn-primary" onclick="submitReply()">发表回复</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const TOKEN = localStorage.getItem("auth_token")
@@ -224,6 +376,12 @@ let ws = null
 let reconnectTimer = null
 const ROOM_ID = "default"
 
+// 论坛状态
+let posts = []              // 列表缓存：[{ id, title, authorName, authorRole, createdAt, replyCount, lastReplyAt }]
+let currentPostId = null    // 当前正在查看的帖子 id
+let currentPost = null      // 当前帖子详情
+let currentReplies = []     // 当前帖子的回复列表
+
 document.getElementById("displayName").textContent = USERNAME
 document.getElementById("mainApp").style.display = "block"
 
@@ -235,6 +393,14 @@ if (USER_ROLE === "teacher") {
   document.getElementById("badgeStudent").style.display = "inline"
   document.getElementById("teacherPanel").style.display = "none"
   document.getElementById("studentPanel").style.display = "block"
+}
+
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.tab === name)
+  })
+  document.getElementById("viewClassroom").classList.toggle("active", name === "classroom")
+  document.getElementById("viewForum").classList.toggle("active", name === "forum")
 }
 
 function logout() {
@@ -292,10 +458,17 @@ function scheduleReconnect() {
 }
 
 function setStatus(online, text) {
-  const dot = document.getElementById("statusDot")
   const txt = document.getElementById("statusText")
-  dot.className = "status-dot " + (online ? "online" : "offline")
   txt.innerHTML = `<span class="status-dot ${online ? "online" : "offline"}"></span> ${text}`
+}
+
+function send(data) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    toast("连接已断开，正在重连中...")
+    return false
+  }
+  ws.send(JSON.stringify(data))
+  return true
 }
 
 function handleMessage(data) {
@@ -317,7 +490,11 @@ function handleMessage(data) {
       }
       if (data.answers && data.answers.length > 0) {
         renderAllAnswers(data.answers)
+      } else {
+        document.getElementById("answerWall").innerHTML = '<div class="empty-state">暂无答案，等待学生提交...</div>'
       }
+      posts = data.posts || []
+      renderPostList()
       break
 
     case "question_update":
@@ -351,19 +528,41 @@ function handleMessage(data) {
       document.getElementById("userCount").textContent = `在线: ${data.count} 人`
       if (data.users) {
         const list = document.getElementById("onlineUsersList")
-        list.innerHTML = data.users.map(u => {
-          const cls = u.role === "teacher" ? "online-user-tag teacher-tag" : "online-user-tag"
-          const icon = u.role === "teacher" ? "👩‍🏫" : "👨‍🎓"
-          return `<span class="${cls}">${icon} ${escapeHtml(u.name)}</span>`
-        }).join("")
+        if (data.users.length === 0) {
+          list.innerHTML = '<span class="empty-state" style="padding:8px;">暂无</span>'
+        } else {
+          list.innerHTML = data.users.map(u => {
+            const cls = u.role === "teacher" ? "online-user-tag teacher-tag" : "online-user-tag"
+            const icon = u.role === "teacher" ? "👩‍🏫" : "👨‍🎓"
+            return `<span class="${cls}">${icon} ${escapeHtml(u.name)}</span>`
+          }).join("")
+        }
       }
       break
 
+    case "new_post":
+      onNewPost(data.post)
+      break
+
+    case "post_detail":
+      renderPostDetail(data.post, data.replies)
+      break
+
+    case "new_reply":
+      onNewReply(data.reply, data.postId, data.lastReplyAt)
+      break
+
+    case "post_deleted":
+      onPostDeleted(data.postId)
+      break
+
     case "error":
-      alert(data.message)
+      toast(data.message)
       break
   }
 }
+
+/* ===== 课堂问答 ===== */
 
 function renderAllAnswers(answers) {
   const wall = document.getElementById("answerWall")
@@ -389,21 +588,6 @@ function answerHTML(a) {
     <div class="ans-text">${escapeHtml(a.text)}</div>
     <div class="ans-time">${a.time}</div>
   </div>`
-}
-
-function escapeHtml(str) {
-  const div = document.createElement("div")
-  div.textContent = str
-  return div.innerHTML
-}
-
-function send(data) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    alert("连接已断开，正在重连中...")
-    return false
-  }
-  ws.send(JSON.stringify(data))
-  return true
 }
 
 function publishQuestion() {
@@ -441,6 +625,199 @@ function clearQuestion() {
   send({ type: "clear_question" })
 }
 
+/* ===== 论坛 ===== */
+
+function toggleNewPostForm() {
+  const form = document.getElementById("newPostForm")
+  const show = !form.classList.contains("show")
+  form.classList.toggle("show", show)
+  if (show) {
+    setTimeout(() => document.getElementById("newPostTitle").focus(), 50)
+  }
+}
+
+function submitNewPost() {
+  const titleEl = document.getElementById("newPostTitle")
+  const contentEl = document.getElementById("newPostContent")
+  const title = titleEl.value.trim()
+  const content = contentEl.value.trim()
+  if (!title) { toast("请填写标题"); return }
+  if (!send({ type: "create_post", title, content })) return
+  titleEl.value = ""
+  contentEl.value = ""
+  document.getElementById("newPostForm").classList.remove("show")
+  toast("发布成功")
+}
+
+function renderPostList() {
+  const list = document.getElementById("postList")
+  if (posts.length === 0) {
+    list.innerHTML = '<div class="empty-state">暂无帖子，快来发第一帖！</div>'
+    return
+  }
+  list.innerHTML = posts.map(p => postItemHTML(p)).join("")
+}
+
+function postItemHTML(p) {
+  const authorClass = p.authorRole === "teacher" ? "meta-author teacher" : "meta-author"
+  const icon = p.authorRole === "teacher" ? "👩‍🏫" : "👨‍🎓"
+  return `<div class="post-item" onclick="openPost('${escapeAttr(p.id)}')">
+    <div class="post-title">${escapeHtml(p.title)}</div>
+    <div class="post-meta">
+      <span class="${authorClass}">${icon} ${escapeHtml(p.authorName)}</span>
+      <span>${formatTime(p.createdAt)}</span>
+      <span class="meta-replies">${p.replyCount} 回复</span>
+      ${p.lastReplyAt > p.createdAt ? `<span>最新回复 ${formatTime(p.lastReplyAt)}</span>` : ""}
+    </div>
+  </div>`
+}
+
+function openPost(postId) {
+  currentPostId = postId
+  document.getElementById("forumListView").style.display = "none"
+  document.getElementById("forumDetailView").style.display = "block"
+  document.getElementById("pdTitle").textContent = "加载中..."
+  document.getElementById("pdMeta").innerHTML = ""
+  document.getElementById("pdContent").textContent = ""
+  document.getElementById("pdContent").classList.remove("empty")
+  document.getElementById("replyList").innerHTML = '<div class="empty-state">加载中...</div>'
+  document.getElementById("replyCount").textContent = "0"
+  send({ type: "load_post", postId })
+}
+
+function backToList() {
+  currentPostId = null
+  currentPost = null
+  currentReplies = []
+  document.getElementById("forumDetailView").style.display = "none"
+  document.getElementById("forumListView").style.display = "block"
+}
+
+function renderPostDetail(post, replies) {
+  if (!post || post.id !== currentPostId) return
+  currentPost = post
+  currentReplies = replies || []
+  document.getElementById("pdTitle").textContent = post.title
+  const authorClass = post.authorRole === "teacher" ? "teacher-tag-inline" : ""
+  const icon = post.authorRole === "teacher" ? "👩‍🏫" : "👨‍🎓"
+  const canDelete = USER_ROLE === "teacher" || post.authorName === USERNAME
+  document.getElementById("pdMeta").innerHTML = `
+    <span class="${authorClass}">${icon} ${escapeHtml(post.authorName)}</span>
+    <span>${formatTime(post.createdAt)}</span>
+    ${canDelete ? `<button class="btn-outline" onclick="deleteCurrentPost()" style="margin-left:auto;">删除</button>` : ""}
+  `
+  const contentEl = document.getElementById("pdContent")
+  if (post.content) {
+    contentEl.textContent = post.content
+    contentEl.classList.remove("empty")
+  } else {
+    contentEl.textContent = "（无正文）"
+    contentEl.classList.add("empty")
+  }
+  renderReplies()
+}
+
+function renderReplies() {
+  document.getElementById("replyCount").textContent = currentReplies.length
+  const list = document.getElementById("replyList")
+  if (currentReplies.length === 0) {
+    list.innerHTML = '<div class="empty-state">还没有回复，第一个来回复吧～</div>'
+    return
+  }
+  list.innerHTML = currentReplies.map(r => replyItemHTML(r)).join("")
+}
+
+function replyItemHTML(r) {
+  const cls = r.authorRole === "teacher" ? "reply-item teacher-reply" : "reply-item"
+  const tagCls = r.authorRole === "teacher" ? "teacher-tag-inline" : ""
+  const icon = r.authorRole === "teacher" ? "👩‍🏫" : "👨‍🎓"
+  return `<div class="${cls}">
+    <div class="reply-meta"><span class="${tagCls}">${icon} ${escapeHtml(r.authorName)}</span></div>
+    <div class="reply-content">${escapeHtml(r.content)}</div>
+    <div class="reply-time">${formatTime(r.createdAt)}</div>
+  </div>`
+}
+
+function submitReply() {
+  if (!currentPostId) return
+  const input = document.getElementById("replyInput")
+  const content = input.value.trim()
+  if (!content) { toast("请输入回复内容"); return }
+  if (!send({ type: "create_reply", postId: currentPostId, content })) return
+  input.value = ""
+}
+
+function deleteCurrentPost() {
+  if (!currentPostId) return
+  if (!confirm("确定要删除这个帖子吗？回复也会一起删除。")) return
+  send({ type: "delete_post", postId: currentPostId })
+}
+
+function onNewPost(post) {
+  posts.unshift(post)
+  renderPostList()
+  if (post.authorName === USERNAME) toast("帖子发布成功")
+}
+
+function onNewReply(reply, postId, lastReplyAt) {
+  const p = posts.find(x => x.id === postId)
+  if (p) {
+    p.replyCount = (p.replyCount || 0) + 1
+    if (lastReplyAt) p.lastReplyAt = lastReplyAt
+    // 重新排序：最近回复的帖子排到前面
+    posts.sort((a, b) => (b.lastReplyAt || b.createdAt) - (a.lastReplyAt || a.createdAt))
+    if (document.getElementById("forumListView").style.display !== "none") {
+      renderPostList()
+    }
+  }
+  if (currentPostId === postId) {
+    currentReplies.push(reply)
+    renderReplies()
+  }
+}
+
+function onPostDeleted(postId) {
+  posts = posts.filter(p => p.id !== postId)
+  renderPostList()
+  if (currentPostId === postId) {
+    toast("帖子已删除")
+    backToList()
+  }
+}
+
+/* ===== 工具 ===== */
+
+function escapeHtml(str) {
+  if (str == null) return ""
+  const div = document.createElement("div")
+  div.textContent = String(str)
+  return div.innerHTML
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;")
+}
+
+function formatTime(ts) {
+  if (!ts) return ""
+  const d = new Date(ts)
+  const now = new Date()
+  const sameDay = d.toDateString() === now.toDateString()
+  if (sameDay) {
+    return d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })
+  }
+  return d.toLocaleDateString("zh-CN") + " " + d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })
+}
+
+let toastTimer = null
+function toast(msg) {
+  const el = document.getElementById("toast")
+  el.textContent = msg
+  el.classList.add("show")
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2400)
+}
+
 document.getElementById("studentAnswerInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") submitStudentAnswer()
 })
@@ -449,6 +826,9 @@ document.getElementById("teacherAnswerInput").addEventListener("keydown", (e) =>
 })
 document.getElementById("teacherQuestionInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") publishQuestion()
+})
+document.getElementById("replyInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submitReply()
 })
 
 connect()
