@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>课堂互动问答</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "微软雅黑", sans-serif;
+    font-size: 16px;
+    background: #f5f7fa;
+    min-height: 100vh;
+    color: #333;
+  }
+
+  .top-bar {
+    background: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-bar .title { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+  .top-bar .info {
+    display: flex; align-items: center; gap: 16px; font-size: 14px;
+  }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+  }
+  .status-dot.online { background: #4caf50; }
+  .status-dot.offline { background: #f44336; }
+  .role-badge {
+    padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
+  }
+  .role-badge.teacher { background: #fff3e0; color: #e65100; }
+  .role-badge.student { background: #e3f2fd; color: #1565c0; }
+
+  .role-select {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; gap: 32px;
+  }
+  .role-select h2 { font-size: 28px; color: #1a1a2e; }
+  .role-select .cards {
+    display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+  }
+  .role-card {
+    width: 220px; padding: 40px 24px; border-radius: 16px; cursor: pointer;
+    text-align: center; transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+  }
+  .role-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .role-card.teacher-card { background: #fff8e1; border-color: #ffb74d; }
+  .role-card.student-card { background: #e8f5e9; border-color: #81c784; }
+  .role-card .icon { font-size: 48px; margin-bottom: 12px; }
+  .role-card .label { font-size: 22px; font-weight: 700; }
+  .role-card .desc { font-size: 13px; color: #666; margin-top: 8px; }
+  .name-input {
+    padding: 10px 16px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px;
+    width: 280px; text-align: center; outline: none;
+  }
+  .name-input:focus { border-color: #2196f3; }
+
+  .main-app { display: none; max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .layout { display: flex; gap: 24px; flex-wrap: wrap; }
+  .left-panel { flex: 1; min-width: 300px; }
+  .right-panel { flex: 1; min-width: 300px; }
+
+  .card {
+    background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .card h3 {
+    font-size: 16px; color: #888; margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  .question-display {
+    font-size: 28px; line-height: 1.6; font-weight: 700; color: #1a1a2e;
+    min-height: 50px; word-break: break-all;
+  }
+  .question-display.empty { color: #ccc; font-weight: 400; font-size: 20px; }
+
+  .teacher-answer-display {
+    margin-top: 16px; padding: 16px; background: #fff8e1; border-radius: 8px;
+    border-left: 4px solid #ff9800; font-size: 22px; display: none;
+  }
+  .teacher-answer-display.show { display: block; }
+  .teacher-answer-display .ta-label {
+    font-size: 13px; color: #e65100; font-weight: 600; margin-bottom: 6px;
+  }
+
+  .input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  input[type="text"] {
+    flex: 1; min-width: 200px; padding: 12px 16px; font-size: 18px;
+    border: 2px solid #e0e0e0; border-radius: 8px; outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: #2196f3; }
+
+  button {
+    padding: 12px 24px; font-size: 16px; border: none; border-radius: 8px;
+    cursor: pointer; font-weight: 600; transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  button:active { transform: scale(0.97); }
+  .btn-primary { background: #2196f3; color: #fff; }
+  .btn-primary:hover { background: #1976d2; }
+  .btn-orange { background: #ff9800; color: #fff; }
+  .btn-orange:hover { background: #f57c00; }
+  .btn-danger { background: #f44336; color: #fff; }
+  .btn-danger:hover { background: #d32f2f; }
+  .btn-outline {
+    background: #fff; color: #666; border: 2px solid #ddd;
+  }
+  .btn-outline:hover { background: #f5f5f5; }
+
+  .answer-wall { max-height: 500px; overflow-y: auto; }
+  .answer-item {
+    padding: 12px 16px; margin-bottom: 8px; background: #f9fafb;
+    border-radius: 8px; border-left: 3px solid #2196f3;
+    animation: slideIn 0.3s ease;
+  }
+  .answer-item.teacher-ans {
+    background: #fff8e1; border-left-color: #ff9800;
+  }
+  .answer-item .ans-name {
+    font-size: 13px; font-weight: 600; color: #666;
+  }
+  .answer-item .ans-text {
+    font-size: 18px; margin-top: 4px; word-break: break-all;
+  }
+  .answer-item .ans-time {
+    font-size: 12px; color: #aaa; margin-top: 4px;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .empty-state {
+    text-align: center; padding: 40px; color: #ccc; font-size: 16px;
+  }
+
+  .divider {
+    height: 1px; background: #eee; margin: 20px 0;
+  }
+
+  .user-count {
+    font-size: 13px; color: #888;
+  }
+</style>
+</head>
+<body>
+
+<div class="role-select" id="roleSelect">
+  <h2>🎓 选择你的角色</h2>
+  <input class="name-input" id="nameInput" placeholder="请输入你的名字">
+  <div class="cards">
+    <div class="role-card teacher-card" onclick="chooseRole('teacher')">
+      <div class="icon">👩‍🏫</div>
+      <div class="label">老师</div>
+      <div class="desc">发布题目 · 回答题目 · 查看学生答案</div>
+    </div>
+    <div class="role-card student-card" onclick="chooseRole('student')">
+      <div class="icon">👨‍🎓</div>
+      <div class="label">学生</div>
+      <div class="desc">查看题目 · 提交答案 · 看答案墙</div>
+    </div>
+  </div>
+</div>
+
+<div class="main-app" id="mainApp">
+  <div class="top-bar">
+    <div class="title">📚 课堂互动问答</div>
+    <div class="info">
+      <span class="user-count" id="userCount">在线: 1 人</span>
+      <span class="role-badge teacher" id="roleBadge" style="display:none">老师</span>
+      <span class="role-badge student" id="roleBadge2" style="display:none">学生</span>
+      <span id="statusText">
+        <span class="status-dot offline" id="statusDot"></span> 未连接
+      </span>
+      <button class="btn-outline" onclick="switchRole()" style="padding:6px 12px;font-size:13px;">切换角色</button>
+    </div>
+  </div>
+
+  <div class="main-app-inner" style="padding:24px;">
+    <div class="layout">
+      <div class="left-panel">
+        <div class="card">
+          <h3>📝 当前题目</h3>
+          <div class="question-display empty" id="questionDisplay">等待老师发布题目...</div>
+        </div>
+
+        <div class="card" id="teacherPanel" style="display:none;">
+          <h3>👩‍🏫 老师操作区</h3>
+          <div class="input-row" style="margin-bottom:12px;">
+            <input type="text" id="teacherQuestionInput" placeholder="输入新题目，例如：3 + 5 = ?">
+            <button class="btn-orange" onclick="publishQuestion()">发布题目</button>
+          </div>
+          <div class="divider"></div>
+          <div class="input-row" style="margin-bottom:12px;">
+            <input type="text" id="teacherAnswerInput" placeholder="老师作答">
+            <button class="btn-orange" onclick="teacherAnswer()">老师作答</button>
+          </div>
+          <button class="btn-danger" onclick="clearAllAnswers()">清空答案墙</button>
+        </div>
+
+        <div class="card" id="studentPanel">
+          <h3>✍️ 学生答题区</h3>
+          <div class="input-row">
+            <input type="text" id="studentAnswerInput" placeholder="输入你的答案...">
+            <button class="btn-primary" onclick="submitStudentAnswer()">提交答案</button>
+          </div>
+        </div>
+
+        <div class="card teacher-answer-display" id="teacherAnswerBox">
+          <div class="ta-label">👩‍🏫 老师答案</div>
+          <div id="teacherAnswerText"></div>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="card">
+          <h3>🧱 答案展示墙</h3>
+          <div class="answer-wall" id="answerWall">
+            <div class="empty-state">暂无答案，等待学生提交...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let ws = null
+let myRole = ""
+let myName = ""
+let reconnectTimer = null
+const ROOM_ID = "default"
+const WS_URL = (() => {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:"
+  return `${proto}//${location.host}/ws?room=${ROOM_ID}`
+})()
+
+function chooseRole(role) {
+  const name = document.getElementById("nameInput").value.trim()
+  if (!name) {
+    alert("请先输入你的名字")
+    return
+  }
+  myRole = role
+  myName = name
+  document.getElementById("roleSelect").style.display = "none"
+  document.getElementById("mainApp").style.display = "block"
+
+  if (role === "teacher") {
+    document.getElementById("teacherPanel").style.display = "block"
+    document.getElementById("studentPanel").style.display = "none"
+    document.getElementById("roleBadge").style.display = "inline"
+    document.getElementById("roleBadge2").style.display = "none"
+  } else {
+    document.getElementById("teacherPanel").style.display = "none"
+    document.getElementById("studentPanel").style.display = "block"
+    document.getElementById("roleBadge").style.display = "none"
+    document.getElementById("roleBadge2").style.display = "inline"
+  }
+
+  connect()
+}
+
+function switchRole() {
+  if (ws) { ws.close(1000, "switch"); ws = null }
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
+  document.getElementById("roleSelect").style.display = "flex"
+  document.getElementById("mainApp").style.display = "none"
+  document.getElementById("answerWall").innerHTML = '<div class="empty-state">暂无答案，等待学生提交...</div>'
+  document.getElementById("questionDisplay").textContent = "等待老师发布题目..."
+  document.getElementById("questionDisplay").classList.add("empty")
+  document.getElementById("teacherAnswerBox").classList.remove("show")
+  document.getElementById("teacherAnswerText").textContent = ""
+}
+
+function connect() {
+  if (ws && ws.readyState === WebSocket.OPEN) return
+
+  try {
+    ws = new WebSocket(WS_URL)
+  } catch (e) {
+    setStatus(false, "连接失败")
+    scheduleReconnect()
+    return
+  }
+
+  ws.onopen = () => {
+    setStatus(true, "已连接")
+    ws.send(JSON.stringify({ type: "join", role: myRole, name: myName }))
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null }
+  }
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    handleMessage(data)
+  }
+
+  ws.onclose = () => {
+    setStatus(false, "已断开")
+    ws = null
+    scheduleReconnect()
+  }
+
+  ws.onerror = () => {
+    setStatus(false, "连接错误")
+  }
+}
+
+function scheduleReconnect() {
+  if (reconnectTimer) return
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    connect()
+  }, 3000)
+}
+
+function setStatus(online, text) {
+  const dot = document.getElementById("statusDot")
+  const txt = document.getElementById("statusText")
+  dot.className = "status-dot " + (online ? "online" : "offline")
+  txt.innerHTML = `<span class="status-dot ${online ? "online" : "offline"}"></span> ${text}`
+}
+
+function handleMessage(data) {
+  switch (data.type) {
+    case "sync":
+      if (data.question) {
+        document.getElementById("questionDisplay").textContent = data.question
+        document.getElementById("questionDisplay").classList.remove("empty")
+      }
+      if (data.teacherAnswer) {
+        document.getElementById("teacherAnswerBox").classList.add("show")
+        document.getElementById("teacherAnswerText").textContent = data.teacherAnswer
+      }
+      if (data.answers && data.answers.length > 0) {
+        renderAllAnswers(data.answers)
+      }
+      break
+
+    case "question_update":
+      document.getElementById("questionDisplay").textContent = data.question
+      document.getElementById("questionDisplay").classList.remove("empty")
+      break
+
+    case "teacher_answer_update":
+      if (data.teacherAnswer) {
+        document.getElementById("teacherAnswerBox").classList.add("show")
+        document.getElementById("teacherAnswerText").textContent = data.teacherAnswer
+      }
+      break
+
+    case "new_answer":
+      addAnswerToWall(data.answer)
+      break
+
+    case "answers_cleared":
+      document.getElementById("answerWall").innerHTML = '<div class="empty-state">答案已清空</div>'
+      break
+
+    case "user_count":
+      document.getElementById("userCount").textContent = `在线: ${data.count} 人`
+      break
+
+    case "error":
+      alert(data.message)
+      break
+  }
+}
+
+function renderAllAnswers(answers) {
+  const wall = document.getElementById("answerWall")
+  if (answers.length === 0) {
+    wall.innerHTML = '<div class="empty-state">暂无答案，等待学生提交...</div>'
+    return
+  }
+  wall.innerHTML = answers.map(a => answerHTML(a)).join("")
+}
+
+function addAnswerToWall(answer) {
+  const wall = document.getElementById("answerWall")
+  if (wall.querySelector(".empty-state")) {
+    wall.innerHTML = ""
+  }
+  wall.insertAdjacentHTML("afterbegin", answerHTML(answer))
+}
+
+function answerHTML(a) {
+  const cls = a.role === "teacher" ? "answer-item teacher-ans" : "answer-item"
+  const roleLabel = a.role === "teacher" ? "👩‍🏫 老师" : "👨‍🎓 " + a.name
+  return `
+    <div class="${cls}">
+      <div class="ans-name">${roleLabel}</div>
+      <div class="ans-text">${escapeHtml(a.text)}</div>
+      <div class="ans-time">${a.time}</div>
+    </div>`
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div")
+  div.textContent = str
+  return div.innerHTML
+}
+
+function send(data) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    alert("连接已断开，正在重连...")
+    return false
+  }
+  ws.send(JSON.stringify(data))
+  return true
+}
+
+function publishQuestion() {
+  const input = document.getElementById("teacherQuestionInput")
+  const question = input.value.trim()
+  if (!question) return
+  if (!send({ type: "set_question", question })) return
+  input.value = ""
+}
+
+function teacherAnswer() {
+  const input = document.getElementById("teacherAnswerInput")
+  const answer = input.value.trim()
+  if (!answer) return
+
+  if (!send({ type: "teacher_answer", answer })) return
+  send({ type: "submit_answer", answer })
+  input.value = ""
+}
+
+function submitStudentAnswer() {
+  const input = document.getElementById("studentAnswerInput")
+  const answer = input.value.trim()
+  if (!answer) return
+  if (!send({ type: "submit_answer", answer })) return
+  input.value = ""
+}
+
+function clearAllAnswers() {
+  if (!confirm("确定要清空答案墙吗？")) return
+  send({ type: "clear_answers" })
+}
+
+document.getElementById("studentAnswerInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") submitStudentAnswer()
+})
+document.getElementById("teacherAnswerInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") teacherAnswer()
+})
+document.getElementById("teacherQuestionInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") publishQuestion()
+})
+document.getElementById("nameInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault()
+  }
+})
+</script>
+</body>
+</html>

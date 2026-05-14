@@ -1,0 +1,14 @@
+name = "classroom-qa"
+main = "src/worker.js"
+compatibility_date = "2025-05-14"
+
+[assets]
+directory = "./public"
+
+[[durable_objects.bindings]]
+name = "CLASSROOM"
+class_name = "ClassroomRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ClassroomRoom"]
