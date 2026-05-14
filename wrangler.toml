@@ -9,6 +9,10 @@ directory = "./public"
 name = "CLASSROOM"
 class_name = "ClassroomRoom"
 
+[[durable_objects.bindings]]
+name = "USER_STORE"
+class_name = "UserStore"
+
 [[migrations]]
 tag = "v1"
-new_classes = ["ClassroomRoom"]
+new_classes = ["ClassroomRoom", "UserStore"]
